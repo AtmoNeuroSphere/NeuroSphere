@@ -272,13 +272,3 @@ plt.show()
 print(f"Wealth wave frequencies sent forward and backward: {wealth_frequencies}")
 print(f"Stored wealth data frequencies forward and backward: {[f + 100 for f in wealth_frequencies]}")
 print(f"VPN protectoin frequency: {vpn_frequency}")
-
-
-
-
-
-
-
-
-                        
-                                
