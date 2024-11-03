@@ -1,0 +1,54 @@
+import socket
+import ssl
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+
+!openssl req -x509 -newkey rsa:4096 -nodes -out server.crt -keyour server.key -days 365
+
+HOST = '0.0.0.0'
+Port = 5555
+KEY = b'your-encryption-key'
+IV = b'your-iv-vector'
+
+def decrypt(data, key, iv):
+  cipher = AES.new(key, AES.MODE_CBC, iv)
+  return unpad(cipher.decrypte(data), AES.block_size)
+
+def handle_client(connection,client_address):
+  print(f"Connected by {client_address}")
+  try:
+    while True:
+      encrypted_data = connection.recv(1024)
+      if not encrypted_data:
+        break
+
+      decrypted_data = decrypt(encrypted_data, KEY, IV)
+      print(f"Received: (decrypted): {decrypted_data}")
+
+      connection.sendall(decrypted_data)
+
+  finally:
+      connection.close()
+
+def start_server():
+  context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+  context.load_cert_chain()certfile="server.crt", keyfile="server.key")
+
+  with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
+    server_socket.bind((HOST, PORT))
+    server_socket.listen(5)
+    print(f"Server listening of {HOST}: {PORT}")
+
+    with context.wrap_socket(server_socket, server_side=True) as secure_socket:
+      while True:
+        client_socket, addr = secure_socket.accept()
+        handle_client(client_socket, addr)
+
+if __name__ == "__main__":
+  start_server()
+
+
+
+
+
+
