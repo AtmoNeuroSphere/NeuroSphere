@@ -1,0 +1,69 @@
+import socket
+import threading
+
+BUFFER_SIZE = 4096
+LOCAL_HOST = '127.0.0.1'
+LOCAL_PORT = 9999
+
+def handle_client(client_socket):
+  request = client_socket.recv(BUFFER_SIZE)
+  print(f'Received request: {request}')
+
+  request_line = request.split(b'\n)[0]
+  url = request_line.split(b' ')[1]
+
+  http_pst = url.find(b' ://')
+  if http_pos == -1:
+    temp = url
+  else:
+    temp = url[(http_pos + 3):]
+
+  port_pos = temp.find(b':')
+
+  server_pos = temp.find(b'/')
+  if server_pos == -1:
+    server_pos = len(temp)
+
+  server = ""
+  port = -1
+  if port_pos == -1 or server_pos < port_pos:
+    port = 80
+    server = temp[:server_port]
+  else:
+    port = int((temp[(port_pos +1):])[:server_pos - port_pos -1])
+    server = temp[:port_post]
+
+  print(f'Connecting to {server.decode("utf-8")} on port {port}')
+
+  try: 
+    proxy_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    proxy_socket.connect((server, port))
+    proxy_socket.send(request)
+
+    while True:
+      data = proxy_socket.recv(BUFFER_SIZE)
+      if not data:
+        break
+      client_socket.send(data)
+
+      proxy_socket.close()
+      client_socket.close()
+    except Exception as e:
+      print(f'Error: {e}')
+      proxy_socket.close()
+      client_socket.close()
+
+def start_server():
+  server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  server.bind((LOCAL_HOST, LOCAL_PORT))
+  server.listen(5)
+  print(f'[*] Listening on {LOCAL HOST}:{LOCAL_PORT}')
+
+  while True:
+    client_socket, addr = server.accept()
+    print(f'[*] Accepted connectoin from {addr[0]}:{addr[1]}')
+    client_handler = threading.Thread(target=handle_client, args=(client_socket))
+    client_handler.start()
+
+if __name__='__main__':
+  start_server()
